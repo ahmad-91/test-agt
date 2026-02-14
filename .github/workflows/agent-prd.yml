@@ -1,0 +1,50 @@
+name: Agent - PRD from Issue
+
+on:
+  issues:
+    types: newfeat
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  prd_agent:
+    if: github.event.label.name == 'agent:prd'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r agents/requirements.txt
+
+      - name: Run PRD Agent
+        env:
+          # GitHub token الافتراضي من Actions (يكفي لفتح PR داخل نفس الريبو)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # مفاتيحك (حطها في GitHub Secrets)
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGSMITH_PROJECT: ${{ secrets.LANGSMITH_PROJECT }}
+
+          # بيانات الحدث
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          REPO_FULL_NAME: ${{ github.repository }}
+
+        run: |
+          python agents/prd_agent.py
