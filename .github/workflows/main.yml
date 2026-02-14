@@ -1,21 +1,36 @@
-name: AI: Product Requirements
+name: AI: Product Requirements (PRD)
 
 on:
   issues:
     types: [labeled]
 
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 jobs:
   run_pm_agent:
-    if: github.event.label.name == 'ai:pm'
+    if: contains(github.event.issue.labels.*.name, 'ai:pm')
     runs-on: ubuntu-latest
 
     steps:
-      - name: Copilot Agent: Write PRD
-        uses: github/coding-agent@latest
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
-          instruction: |
-            Generate a Product Requirements Document with sections:
-            Overview, Goals, Users, Non-Goals, Stories, Acceptance Criteria
-            based on the issue title/body.
-            Output a Markdown file at docs/prd/<slug>.md
-          target-files: "docs/prd/"
+          python-version: "3.11"
+
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r agents/requirements.txt
+
+      - name: Run PRD Agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          REPO_FULL_NAME: ${{ github.repository }}
+        run: python agents/prd_agent.py
