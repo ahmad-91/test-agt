@@ -32,7 +32,7 @@ jobs:
 
       - name: Run PRD Agent
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
           ISSUE_NUMBER: ${{ github.event.issue.number }}
