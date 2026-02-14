@@ -1,0 +1,21 @@
+name: AI: Product Requirements
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  run_pm_agent:
+    if: github.event.label.name == 'ai:pm'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copilot Agent: Write PRD
+        uses: github/coding-agent@latest
+        with:
+          instruction: |
+            Generate a Product Requirements Document with sections:
+            Overview, Goals, Users, Non-Goals, Stories, Acceptance Criteria
+            based on the issue title/body.
+            Output a Markdown file at docs/prd/<slug>.md
+          target-files: "docs/prd/"
